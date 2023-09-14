@@ -12,21 +12,12 @@ up/down/left/right direction. Diagonal cells are not considered neighbors.
 • For approximately half these cells, pick one of their closed neighbors at random and open it.
 Note: How big an environment D you can manage is going to depend on your hardware and implementation, but you
 should aim to generate data on as large an environment as is feasible.
-2 The Bot
-The bot occupies an open cell somewhere in the ship (to be determined shortly). The bot can move to one adjacent
-cell every time step (up/down/left/right).
-3 The Fire
-At a random open cell, a fire starts. Every time step, the fire has the ability to spread to adjacent open cells. The fire
-cannot spread to blocked cells. The fire spreads according to the following rules: At each timestep, a non-burning
-cell catches on fire with the probability 1 − (1 − q)K :
-• q is a parameter between 0 and 1, defining the flammability of the ship.
-• K is the number of currently burning neighbors of this cell.
 
 """
 
 #• Start with a square grid, D × D, of ‘blocked’ cells.
 
-
+import random
 
 def generateshiplayout(D = 3):
     grid = []
@@ -41,7 +32,60 @@ def generateshiplayout(D = 3):
     
     for row in grid:
         print(" ".join(row))
+        
+    #Choose a square in the interior to ‘open’ at random.
     
+    random_x_coordinate = random.randint(0, D-1)
+    random_y_coordinate = random.randint(0, D-1)
+    grid[random_x_coordinate][random_y_coordinate] = "open"
+    
+    for row in grid: 
+        print(" ".join(row))
+
+    
+    """"
+    Iteratively do the following:
+    Identify all currently blocked cells that have exactly one open neighbor.
+    Of these currently blocked cells with exactly one open neighbor, pick one at random.
+    Open the selected cell.
+    Repeat until you can no longer do so.
+    
+    """
+    directions = [(0, 1), (0, -1), (-1, 0), (1, 0)]
+    
+    def count_neighbors_helper(x,y):
+        
+        count = 0
+        
+        for addedx, addedy in directions: 
+            fullx,fully = x + addedx, y + addedy
+            if 0 <= fullx < D and 0 <= fully < D and grid[fullx][fully] == "open":
+                count += 1
+        return count
+        
+        
+    
+    while True: 
+        
+        one_neighbor_blocked_cells = []
+        
+        for x in range(0, D):
+            for y in range(0, D):
+                if grid[x][y] == "blocked" and count_neighbors_helper(x,y) == 1:
+                    one_neighbor_blocked_cells.append((x,y))
+                    
+        if not one_neighbor_blocked_cells:
+            break
+        
+        x,y = random.choice(one_neighbor_blocked_cells)
+        
+        grid[x][y] = "open"
+        
+    
+    for row in grid: 
+        print(" ".join(row))
+            
+                    
 generateshiplayout()
             
         
