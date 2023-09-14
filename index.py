@@ -84,6 +84,22 @@ def generateshiplayout(D = 3):
     
     for row in grid: 
         print(" ".join(row))
+    
+    
+    #Identify all cells that are ‘dead ends’ - open cells with one open neighbor.
+        
+    dead_ends = []
+    
+    for x in range(0, D):
+        for y in range(0, D):
+            if grid[x][y] == "open" and count_neighbors_helper(x, y) == 1:
+                dead_ends.append((x, y))
+    print("Dead Ends")
+    
+    
+    for x, y in dead_ends:
+        print(f"({x}, {y})")
+                
             
                     
 generateshiplayout()
