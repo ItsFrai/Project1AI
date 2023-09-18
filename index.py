@@ -19,7 +19,7 @@ should aim to generate data on as large an environment as is feasible.
 
 import random
 
-def generateshiplayout(D = 3):
+    def generateshiplayout(D = 3):
     grid = []
 
     for _ in range(D):
