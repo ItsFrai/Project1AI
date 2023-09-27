@@ -51,13 +51,11 @@ class Ship():
         rand_x_coord = random.randint(0, self.D-1)
         rand_y_coord = random.randint(0, self.D-1)
         self.ship[rand_x_coord][rand_y_coord] = 'O'
-        
+
         open_possibilities.add((rand_x_coord, rand_y_coord))
-        
+
         print(f"\nOpening inital.... {rand_x_coord, rand_y_coord}")
-        for row in self.ship:
-            print(" ".join(row))
-        print()
+        print(self)
 
         while open_possibilities:
             curr_x, curr_y = open_possibilities.pop()
@@ -73,16 +71,49 @@ class Ship():
                         self.ship[new_x][new_y] = '-' # Not able to open
                     else:
                         open_possibilities.add((new_x,new_y))
-
-        # now get deadends
+        print(self)
+        
+        # now get intial num of deadends
         for x in range(self.D):
             for y in range(self.D):
-                if self.ship[x][y] == "O" and self.count_neighbors(x, y) == 1:
+                if self.ship[x][y] == 'O' and self.count_neighbors(x, y) == 1:
                     self.dead_ends.append((x, y))
+
+        half = len(self.dead_ends) // 2
+        print(f"Number of deadends (init): {len(self.dead_ends)}")
         
-        print("Dead ends:")
+        # make approximately half of deadends non dead ends
+        while len(self.dead_ends) > half:
+            curr_x, curr_y = random.choice(self.dead_ends)
+            print(f"Removing: {curr_x, curr_y} from dead ends")
+            self.dead_ends.remove((curr_x,curr_y))
+            
+            # Remove one of the sides arbitrarily from the dead ends
+            for x, y in random.sample(self.directions, len(self.directions)):
+                new_x, new_y = x + curr_x, y + curr_y
+                if  0 <= new_x < self.D and 0 <= new_y < self.D and (self.ship[new_x][new_y] in ['X', '-']):
+                    self.ship[new_x][new_y] = 'O'
+                    break
+            
+            print(self)
+            new_dead_ends = [] # new deadend array to see how many deadends are removed
+            
+            # recompute the num of deadends
+            for x in range(self.D):
+                for y in range(self.D):
+                    if self.ship[x][y] == 'O' and self.count_neighbors(x, y) == 1:
+                        new_dead_ends.append((x,y))
+            
+            self.dead_ends = new_dead_ends.copy()
+        
+            for x in range(self.D):
+                for y in range(self.D):
+                    if self.ship[x][y] == '-':
+                        self.ship[x][y] = 'X' 
+        
+        print(f"Length of deadends: {len(self.dead_ends)}\n" ,"Dead ends:")
         for x, y in self.dead_ends:
-            print(f"({x}, {y})") 
+            print(f"({x}, {y})")
         print()
 
 if __name__ == "__main__":
@@ -90,6 +121,5 @@ if __name__ == "__main__":
     ship.generate_init_ship()
     ship.open_ship()
     print(ship)
-    # ship.generate_init_ship()
-            
+
         
