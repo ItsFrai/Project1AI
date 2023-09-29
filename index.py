@@ -83,7 +83,7 @@ def generateshiplayout(D = 3):
         
     
     for row in grid: 
-        print(" ".join(row))
+        print("\t".join(row))
     
     
     #Identify all cells that are ‘dead ends’ - open cells with one open neighbor.
