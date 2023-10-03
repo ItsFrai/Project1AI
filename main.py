@@ -1,6 +1,8 @@
 import random
 import time
 
+from print import print_failure # if this gives you errors, delete this, its just a funny thing I did. 
+
 class Ship():
     def __init__(self) -> None:
         try:
@@ -70,7 +72,9 @@ class Ship():
         rand_y_coord = random.randint(0, self.D-1)
         self.ship[rand_x_coord][rand_y_coord] = 'O'
 
+
         open_possibilities.add((rand_x_coord, rand_y_coord))
+
 
         print(f"\nOpening inital.... {rand_x_coord, rand_y_coord}")
         print(self)
@@ -132,6 +136,7 @@ class Ship():
         print(f"Length of deadends: {len(self.dead_ends)}\n" ,"Dead ends:")
         for x, y in self.dead_ends:
             print(f"({x}, {y})")
+            print(f"({x}, {y})")
         print()
         
         # randomly chooses locations for a button, bot, and fire
@@ -184,6 +189,8 @@ class Ship():
             fire_possibilties = fire_copy.copy()
             print(self)
             time.sleep(3)
+
+            print_failure()
                 # fire_possibilties.remove(self.fire)
                 # Forumla = 1 - (1 - q)^k  where k = number of burning cells next to this one
                 # get the number of neighbors that are on fire --> k
@@ -191,13 +198,10 @@ class Ship():
                 # else compute the formula and see if the random number is larger than it
                 
 if __name__ == "__main__":
+
     ship = Ship()
     ship.generate_ship()
     print(ship)
-    ans = int(input("Which bot do you want to run?\n1.Bot 1\n2.Bot 2.\n3.Bot 3\n4.Bot 4\n"))
+    # ship.generate_init_ship()
     
-    
-    if ans == 1:
-        ship.run_bot_1()
-    else:
-        pass
+
