@@ -1,8 +1,6 @@
 import random
 import time
 
-from print import print_failure # if this gives you errors, delete this, its just a funny thing I did. 
-
 class Ship():
     def __init__(self) -> None:
         try:
@@ -186,8 +184,6 @@ class Ship():
             fire_possibilties = fire_copy.copy()
             print(self)
             time.sleep(3)
-
-            print_failure()
                 # fire_possibilties.remove(self.fire)
                 # Forumla = 1 - (1 - q)^k  where k = number of burning cells next to this one
                 # get the number of neighbors that are on fire --> k
@@ -205,4 +201,3 @@ if __name__ == "__main__":
         ship.run_bot_1()
     else:
         pass
-
