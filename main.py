@@ -1,4 +1,5 @@
 import random
+import math
 
 class Ship():
     def __init__(self) -> None:
@@ -16,6 +17,9 @@ class Ship():
         self.D = D # D x D Dimension of ship
         self.ship = []
         self.dead_ends = []
+        self.bot_x, self.bot_y = -1, -1
+        self.button_x, self.button_y = -1, -1
+        self.fire_x, self.fire_y = -1, -1
 
     def __repr__(self) -> str:
         ship_str = ""
@@ -84,12 +88,46 @@ class Ship():
         for x, y in self.dead_ends:
             print(f"({x}, {y})") 
         print()
+        
+    def generate_random_position(self):
+        x, y = random.randint(0, self.D - 1), random.randint(0, self.D - 1)
+        while self.ship[x][y] == "-":
+            x, y = random.randint(0, self.D - 1), random.randint(0, self.D - 1)
+        return x, y
+    def place_bot_button_fire(self):
+        self.bot_x, self.bot_y = self.generate_random_position()
+        self.button_x, self.button_y = self.generate_random_position()
+        self.fire_x, self.fire_y = self.generate_random_position()
+        
+        self.ship[self.bot_x][self.bot_y] = "B"
+        self.ship[self.button_x][self.button_y] = "TT"
+        self.ship[self.fire_x][self.fire_y] = "F"
+        
+    def e_Distance(x1,y1,x2,y2): 
+        eDistance = math.dist([x1,y1],[x2,y2])
+        
+    def fire_spread():
+        pass
+        
+    def find_shortest_path():
+        pass
+    
+    def bot1_strategy():
+        pass
 
+    def bot2_strategy():
+        pass
+    
+    def bot3_strategy():
+        pass
+    
+        
 if __name__ == "__main__":
+
     ship = Ship()
     ship.generate_init_ship()
     ship.open_ship()
     print(ship)
     # ship.generate_init_ship()
-            
-        
+    
+
