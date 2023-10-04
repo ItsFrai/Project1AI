@@ -206,8 +206,6 @@ class Ship():
         
         curr_x, curr_y = self.fire
         
-        fire_possibilities.add((curr_x,curr_y))
-        
         actual_fire = set()
         
         actual_fire.add((curr_x,curr_y))
@@ -220,8 +218,6 @@ class Ship():
                 fire_possibilities.add((new_x, new_y))
 
         while self.bot not in actual_fire or self.bot != self.button:
-            
-            fire_copy = fire_possibilities.copy()
             
             def find_shortest_path(bot_x, bot_y, button_x, button_y, actual_fire):
                 
@@ -264,7 +260,9 @@ class Ship():
                         new_x, new_y = c_x + dx, c_y + dy
                         new_pos = (new_x, new_y)
 
-                        if (0 <= new_x < self.D and 0 <= new_y < self.D and self.ship[new_x][new_y] not in combination_of_avoided_cells):
+                        if (0 <= new_x < self.D and 0 <= new_y < self.D 
+                            and self.ship[new_x][new_y] not in combination_of_avoided_cells 
+                            and self.ship[new_x][new_y] != 'X'):
                             new_cost = cost[current] + 1
 
                             if (new_pos not in cost or new_cost < cost[new_pos]):
@@ -289,6 +287,8 @@ class Ship():
                 print("you lost")
                 break
         
+            fire_copy = fire_possibilities.copy()
+        
             for fire_pos in fire_possibilities:
                 curr_x, curr_y = fire_pos
                 k = self.count_neighbors(curr_x, curr_y, self.colored_block('r'))
@@ -297,6 +297,7 @@ class Ship():
 
                 if fire_spread_probability > rand:
                     self.ship[curr_x][curr_y] = self.colored_block('r')
+                    actual_fire.add((curr_x,curr_y))
                     for x, y in self.directions:
                         new_x, new_y = x + curr_x, y + curr_y
                         if 0 <= new_x < self.D and 0 <= new_y < self.D and self.ship[new_x][new_y] in possible_places:
