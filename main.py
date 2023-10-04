@@ -308,7 +308,7 @@ class Ship():
             print(self)
             time.sleep(3)
     
-
+#oooggsdgfasgh
                
 if __name__ == "__main__":
 
