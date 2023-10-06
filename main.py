@@ -219,21 +219,17 @@ class Ship():
 
         while self.bot not in actual_fire or self.bot != self.button:
             
-            def find_shortest_path(bot_x, bot_y, button_x, button_y, actual_fire):
-                
-                 #finds the adjacent cells of the fire and combine with actual fire for bot to ignore 
+            adjacent_cells_from_fire = set()
 
-                adjacent_cells_from_fire = set()
+            for x, y in actual_fire:
+                for dx, dy in self.directions:
+                    adj_x, adj_y = x + dx, y + dy
+                    if 0 <= adj_x < self.D and 0 <= adj_y < self.D and self.ship[adj_x][adj_y] == "O":
+                        adjacent_cells_from_fire.add((adj_x, adj_y))
 
-                for x, y in actual_fire:
-                    for dx, dy in self.directions:
-                        adj_x, adj_y = x + dx, y + dy
-                        if 0 <= adj_x < self.D and 0 <= adj_y < self.D and self.ship[adj_x][adj_y] == "O":
-                            adjacent_cells_from_fire.add((adj_x, adj_y))
-
-                combination_of_avoided_cells = actual_fire.union(adjacent_cells_from_fire)
-                
-                
+            combination_of_avoided_cells = actual_fire.union(adjacent_cells_from_fire)
+            
+            def find_shortest_path(bot_x, bot_y, button_x, button_y, firey):    
 
                 queue = [(0, (bot_x, bot_y))]
                 heapq.heapify(queue)
@@ -261,24 +257,35 @@ class Ship():
                         new_pos = (new_x, new_y)
 
                         if (0 <= new_x < self.D and 0 <= new_y < self.D 
-                            and self.ship[new_x][new_y] not in combination_of_avoided_cells 
-                            and self.ship[new_x][new_y] != 'X'):
+                            and self.ship[new_x][new_y] != 'X'
+                            and (new_pos not in cost or new_cost < cost[new_pos]) 
+                            and self.ship[new_x][new_y] not in firey):
                             new_cost = cost[current] + 1
 
-                            if (new_pos not in cost or new_cost < cost[new_pos]):
-                                cost[new_pos] = new_cost
-                                priority = new_cost + self.heuristic(button_x, button_y, new_x, new_y)
-                                heapq.heappush(queue, (priority, new_pos))
-                                parent[new_pos] = current
+                            cost[new_pos] = new_cost
+                            priority = new_cost + self.heuristic(button_x, button_y, new_x, new_y)
+                            heapq.heappush(queue, (priority, new_pos))
+                            parent[new_pos] = current
+
 
                 return None
 
-            button_path = find_shortest_path(self.bot[0], self.bot[1], self.button[0], self.button[1], actual_fire)
+            button_path = find_shortest_path(self.bot[0], self.bot[1], self.button[0], self.button[1], combination_of_avoided_cells)
 
             if button_path:
                 self.ship[self.bot[0]][self.bot[1]] = 'O'
                 self.bot = button_path[0]
                 self.ship[self.bot[0]][self.bot[1]] = self.colored_block('c')
+            else:
+                print("no path with combination trying actual fire")
+                button_path_fire_only = find_shortest_path(self.bot[0], self.bot[1], self.button[0], self.button[1], actual_fire)
+                if button_path_fire_only:
+                    self.ship[self.bot[0]][self.bot[1]] = 'O'
+                    self.bot = button_path_fire_only[0]
+                    self.ship[self.bot[0]][self.bot[1]] = self.colored_block('c')
+                else:
+                    print("No path to button")
+                    break
                 
             if self.bot == self.button:
                 print("Bot won")
@@ -307,7 +314,11 @@ class Ship():
 
             fire_possibilities = fire_copy.copy()
             print(self)
-            time.sleep(3)
+            time.sleep(1)
+            
+    def run_bot_4(self) -> None:
+        pass 
+        
     
 #oooggsdgfasgh
                
@@ -326,5 +337,8 @@ if __name__ == "__main__":
         ship.run_bot_2()
     elif ans == 3:
         ship.run_bot_3()
+    elif ans == 4:
+        ship.run_bot_4()
     
+            
 
