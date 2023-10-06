@@ -217,8 +217,11 @@ class Ship():
             if 0 <= new_x < self.D and 0 <= new_y < self.D and self.ship[new_x][new_y] == 'O':
                 fire_possibilities.add((new_x, new_y))
 
-        while self.bot not in actual_fire or self.bot != self.button:
+        while self.bot != self.button:
             
+            if self.bot in actual_fire:
+                print("you lost bot in fire")
+                break
             adjacent_cells_from_fire = set()
 
             for x, y in actual_fire:
@@ -229,7 +232,8 @@ class Ship():
 
             combination_of_avoided_cells = actual_fire.union(adjacent_cells_from_fire)
             
-            def find_shortest_path(bot_x, bot_y, button_x, button_y, firey):    
+            def find_shortest_path(bot_x, bot_y, button_x, button_y, firey):   
+            
 
                 queue = [(0, (bot_x, bot_y))]
                 heapq.heapify(queue)
@@ -250,6 +254,8 @@ class Ship():
                         while current in parent:
                             path.insert(0, current)
                             current = parent[current]
+                        if any(cell in firey for cell in path):
+                            continue
                         return path
 
                     for dx, dy in self.directions:
@@ -258,7 +264,7 @@ class Ship():
 
                         if (0 <= new_x < self.D and 0 <= new_y < self.D 
                             and self.ship[new_x][new_y] != 'X'
-                            and (new_pos not in cost or new_cost < cost[new_pos]) 
+                            and (new_pos not in cost or new_cost < cost[new_pos])
                             and self.ship[new_x][new_y] not in firey):
                             new_cost = cost[current] + 1
 
@@ -267,30 +273,32 @@ class Ship():
                             heapq.heappush(queue, (priority, new_pos))
                             parent[new_pos] = current
 
-
                 return None
-
+            
             button_path = find_shortest_path(self.bot[0], self.bot[1], self.button[0], self.button[1], combination_of_avoided_cells)
 
             if button_path:
-                self.ship[self.bot[0]][self.bot[1]] = 'O'
-                self.bot = button_path[0]
-                self.ship[self.bot[0]][self.bot[1]] = self.colored_block('c')
-            else:
-                print("no path with combination trying actual fire")
+                    print("using combo path")
+                    self.ship[self.bot[0]][self.bot[1]] = 'O'
+                    self.bot = button_path[0]
+                    self.ship[self.bot[0]][self.bot[1]] = self.colored_block('c')
+                
+            else: 
                 button_path_fire_only = find_shortest_path(self.bot[0], self.bot[1], self.button[0], self.button[1], actual_fire)
+                print("no path with combination trying actual fire")
+                
                 if button_path_fire_only:
+                    print("Using actual fire path")
                     self.ship[self.bot[0]][self.bot[1]] = 'O'
                     self.bot = button_path_fire_only[0]
                     self.ship[self.bot[0]][self.bot[1]] = self.colored_block('c')
                 else:
                     print("No path to button")
-                    break
-                
+                    break  
             if self.bot == self.button:
                 print("Bot won")
                 break
-            if self.bot in fire_possibilities:
+            if self.bot in actual_fire:
                 print("you lost")
                 break
         
@@ -315,12 +323,10 @@ class Ship():
             fire_possibilities = fire_copy.copy()
             print(self)
             time.sleep(1)
-            
+                     
     def run_bot_4(self) -> None:
         pass 
         
-    
-#oooggsdgfasgh
                
 if __name__ == "__main__":
 
