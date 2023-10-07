@@ -1,6 +1,7 @@
 import random
 import time
 import heapq
+import math
 
 class Ship():
     def __init__(self) -> None:
@@ -30,9 +31,38 @@ class Ship():
             ship_str += '[' + ' '.join(row) + ']\n'
         return ship_str
     
-    def heuristic(self, x, y, curr_x, curr_y):
-        return abs(x - curr_x) + abs(y - curr_y)
+     #insert the new position in priority of the euclidian distance
+    def insert(self, fringe: list, neighbour_x, neighbour_y):
+        edistance = math.dist([neighbour_x, neighbour_y],[self.button[0], self.button[1]])
+        fringe.append()
+        fringe.sort()
+         
+    #finds the shortest distance from the bot to the button
+    def find_path(self, curr_x, curr_y, constraints=None) -> list:
+        
+        path = []
+        pos_x = curr_x
+        pos_y = curr_y
+        
 
+        if pos_x == self.button[0] and pos_y == self.button[1]:
+            return self.button
+        
+        short_dist = {} # possible distance sorted from shortest to longest heuristically (euclidian distance)
+        #for each distance in the
+        for x, y in self.directions:
+            new_x, new_y = x + pos_x, y + pos_y
+            if 0 <= new_x < self.D and 0 <= new_y < self.D and self.ship[new_x][new_y] != 'X' and (new_x, new_y) not in constraints:
+                edist = math.dist([new_x, new_y],[self.button[0], self.button[1]])
+                short_dist[(new_x, new_y)] = edist
+        sorted_short_dist = sorted(short_dist)
+        
+        for dir in sorted_short_dist:
+            path.append(self.find_path(dir[0], dir[1], constraints))
+        
+        path.append((pos_x, pos_y))
+
+        # path [button, ]
     
     # generates and returns a colored block
     def colored_block(self, color: str) -> str:
@@ -162,35 +192,41 @@ class Ship():
         fire_possibilties = set()
         q = .9 # ???
         curr_x, curr_y = self.fire
+        fringe = [self.bot]
+        # self.insert(fringe)
+        path = self.find_path(self.bot[0], self.bot[1], self.fire)
+        print(path)
 
         # Initial fire probable locations (up to 4)
-        for x, y in self.directions:
-            new_x, new_y = x + curr_x, y + curr_y
-            if 0 <= new_x < self.D and 0 <= new_y < self.D and self.ship[new_x][new_y] == 'O':
-                fire_possibilties.add((new_x, new_y)) 
-                print((new_x, new_y))
+        # for x, y in self.directions:
+        #     new_x, new_y = x + curr_x, y + curr_y
+        #     if 0 <= new_x < self.D and 0 <= new_y < self.D and self.ship[new_x][new_y] == 'O':
+        #         fire_possibilties.add((new_x, new_y)) 
+        #         print((new_x, new_y))
+                
+    
 
-        while self.bot not in fire_possibilties or self.bot == self.button:
-            fire_copy = fire_possibilties.copy()
+        # while self.bot not in fire_possibilties or self.bot == self.button:
+            # fire_copy = fire_possibilties.copy()
 
-            for fire_poss in fire_possibilties:
-                curr_x, curr_y = fire_poss
-                k = self.count_neighbors(new_x, new_y, self.colored_block('r')) # number of fires
-                fire_spread_possibility = 1 - (1 - q) ** k
-                rand = random.random()
-                print(f"Fire spread: {fire_spread_possibility}")
-                print(f"rand: {rand}")
-                if fire_spread_possibility > rand:
-                    self.ship[curr_x][curr_y] = self.colored_block('r')
-                    for x, y in self.directions:
-                        new_x, new_y = x + curr_x, y + curr_y
-                        if 0 <= new_x < self.D and 0 <= new_y < self.D and self.ship[new_x][new_y] in possible_places:
-                            fire_copy.add((new_x, new_y))
-                else:
-                    fire_copy.add(self.fire)
-            fire_possibilties = fire_copy.copy()
-            print(self)
-            time.sleep(3)
+            # for fire_poss in fire_possibilties:
+            #     curr_x, curr_y = fire_poss
+            #     k = self.count_neighbors(new_x, new_y, self.colored_block('r')) # number of fires
+            #     fire_spread_possibility = 1 - (1 - q) ** k
+            #     rand = random.random()
+            #     print(f"Fire spread: {fire_spread_possibility}")
+            #     print(f"rand: {rand}")
+            #     if fire_spread_possibility > rand:
+            #         self.ship[curr_x][curr_y] = self.colored_block('r')
+            #         for x, y in self.directions:
+            #             new_x, new_y = x + curr_x, y + curr_y
+            #             if 0 <= new_x < self.D and 0 <= new_y < self.D and self.ship[new_x][new_y] in possible_places:
+            #                 fire_copy.add((new_x, new_y))
+            #     else:
+            #         fire_copy.add(self.fire)
+            # fire_possibilties = fire_copy.copy()
+            # print(self)
+            # time.sleep(3)
             
              # fire_possibilties.remove(self.fire)
                 # Forumla = 1 - (1 - q)^k  where k = number of burning cells next to this one
