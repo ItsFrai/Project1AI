@@ -1,6 +1,5 @@
 import random
 import time
-import heapq
 import math
 
 class Ship():
@@ -30,40 +29,38 @@ class Ship():
         for row in self.ship:
             ship_str += '[' + ' '.join(row) + ']\n'
         return ship_str
-    
-     #insert the new position in priority of the euclidian distance
-    def insert(self, fringe: list, neighbour_x, neighbour_y):
-        edistance = math.dist([neighbour_x, neighbour_y],[self.button[0], self.button[1]])
-        fringe.append()
-        fringe.sort()
-         
-    #finds the shortest distance from the bot to the button
-    def find_path(self, curr_x, curr_y, constraints=None) -> list:
-        
-        path = []
-        pos_x = curr_x
-        pos_y = curr_y
-        
 
-        if pos_x == self.button[0] and pos_y == self.button[1]:
-            return self.button
-        
-        short_dist = {} # possible distance sorted from shortest to longest heuristically (euclidian distance)
-        #for each distance in the
-        for x, y in self.directions:
-            new_x, new_y = x + pos_x, y + pos_y
-            if 0 <= new_x < self.D and 0 <= new_y < self.D and self.ship[new_x][new_y] != 'X' and (new_x, new_y) not in constraints:
-                edist = math.dist([new_x, new_y],[self.button[0], self.button[1]])
-                short_dist[(new_x, new_y)] = edist
-        sorted_short_dist = sorted(short_dist)
-        
-        for dir in sorted_short_dist:
-            path.append(self.find_path(dir[0], dir[1], constraints))
-        
-        path.append((pos_x, pos_y))
+    def find_shortest_path(self, constraints: list) -> list:  
+                fringe = dict()
+                fringe.update({self.bot: math.dist([self.bot[0], self.bot[1]], [self.button[0], self.button[1]])})
+                parent = {}
+                visited = []
 
-        # path [button, ]
-    
+                sorted_list = [(self.bot[0], self.bot[1])]
+                while fringe:
+                    smallest_key = sorted_list.pop(0)
+                    curr_x, curr_y = smallest_key
+                    fringe.pop(smallest_key)
+
+                    # If button is found
+                    if curr_x == self.button[0] and curr_y == self.button[1]:
+                        path = [(curr_x, curr_y)]
+                        while smallest_key in parent and smallest_key != self.bot:
+                            path.insert(0, smallest_key)
+                            smallest_key = parent[smallest_key]
+                        return path
+                    for x, y in self.directions:
+                        new_x, new_y = x + curr_x, y + curr_y
+                        # all of the neighbours inside this if statement are valid neighbours.
+                        if 0 <= new_x < self.D and 0 <= new_y < self.D and self.ship[new_x][new_y] != 'X' and (new_x, new_y) not in constraints and (new_x, new_y) not in visited:
+                            edist = math.dist([new_x, new_y], [self.button[0], self.button[1]])
+                            fringe.update({(new_x, new_y): edist})
+                            visited.append((new_x,new_y))
+                            parent[(new_x, new_y)] = smallest_key
+
+                    sorted_list = [k for k, v in sorted(fringe.items(), key=lambda item: item[1])]
+                return None
+
     # generates and returns a colored block
     def colored_block(self, color: str) -> str:
         color_codes = {
@@ -187,200 +184,192 @@ class Ship():
                     self.ship[rand_x_coord][rand_y_coord] = self.colored_block('r')
                     self.fire = (rand_x_coord, rand_y_coord)
 
-    def run_bot_1(self) -> None: # run with the type of bot you want
+    def run_bot_1(self, q) -> None: # run with the type of bot you want
         possible_places = [self.colored_block('c'), 'O']
         fire_possibilties = set()
-        q = .9 # ???
+        q = prob # ???
         curr_x, curr_y = self.fire
-        fringe = [self.bot]
-        # self.insert(fringe)
-        path = self.find_path(self.bot[0], self.bot[1], self.fire)
+        fire = [self.fire]
+        
+        path = self.find_shortest_path(fire)
         print(path)
 
         # Initial fire probable locations (up to 4)
-        # for x, y in self.directions:
-        #     new_x, new_y = x + curr_x, y + curr_y
-        #     if 0 <= new_x < self.D and 0 <= new_y < self.D and self.ship[new_x][new_y] == 'O':
-        #         fire_possibilties.add((new_x, new_y)) 
-        #         print((new_x, new_y))
-                
-    
-
-        # while self.bot not in fire_possibilties or self.bot == self.button:
-            # fire_copy = fire_possibilties.copy()
-
-            # for fire_poss in fire_possibilties:
-            #     curr_x, curr_y = fire_poss
-            #     k = self.count_neighbors(new_x, new_y, self.colored_block('r')) # number of fires
-            #     fire_spread_possibility = 1 - (1 - q) ** k
-            #     rand = random.random()
-            #     print(f"Fire spread: {fire_spread_possibility}")
-            #     print(f"rand: {rand}")
-            #     if fire_spread_possibility > rand:
-            #         self.ship[curr_x][curr_y] = self.colored_block('r')
-            #         for x, y in self.directions:
-            #             new_x, new_y = x + curr_x, y + curr_y
-            #             if 0 <= new_x < self.D and 0 <= new_y < self.D and self.ship[new_x][new_y] in possible_places:
-            #                 fire_copy.add((new_x, new_y))
-            #     else:
-            #         fire_copy.add(self.fire)
-            # fire_possibilties = fire_copy.copy()
-            # print(self)
-            # time.sleep(3)
-            
-             # fire_possibilties.remove(self.fire)
-                # Forumla = 1 - (1 - q)^k  where k = number of burning cells next to this one
-                # get the number of neighbors that are on fire --> k
-                # if neighbors are all on fire, remove it
-                # else compute the formula and see if the random number is larger than it
-                
-    def run_bot_3(self) -> None:
-        
-        possible_places = [self.colored_block('c'), 'O']
-
-        fire_possibilities = set()
-        
-        curr_x, curr_y = self.fire
-        
-        actual_fire = set()
-        
-        actual_fire.add((curr_x,curr_y))
-        
-        q = 0.9
-
         for x, y in self.directions:
             new_x, new_y = x + curr_x, y + curr_y
             if 0 <= new_x < self.D and 0 <= new_y < self.D and self.ship[new_x][new_y] == 'O':
-                fire_possibilities.add((new_x, new_y))
+                fire_possibilties.add((new_x, new_y)) 
 
         while self.bot != self.button:
-            
-            if self.bot in actual_fire:
-                print("you lost bot in fire")
-                break
-            adjacent_cells_from_fire = set()
-
-            for x, y in actual_fire:
-                for dx, dy in self.directions:
-                    adj_x, adj_y = x + dx, y + dy
-                    if 0 <= adj_x < self.D and 0 <= adj_y < self.D and self.ship[adj_x][adj_y] == "O":
-                        adjacent_cells_from_fire.add((adj_x, adj_y))
-
-            combination_of_avoided_cells = actual_fire.union(adjacent_cells_from_fire)
-            
-            def find_shortest_path(bot_x, bot_y, button_x, button_y, firey):   
-            
-
-                queue = [(0, (bot_x, bot_y))]
-                heapq.heapify(queue)
-
-                cost = {}
-                parent = {}
-
-                cost[(bot_x, bot_y)] = 0
-
-                while queue:
-                    _, current = heapq.heappop(queue)
-
-                    c_x, c_y = current
-
-                    if c_x == button_x and c_y == button_y:
-                        path = []
-
-                        while current in parent:
-                            path.insert(0, current)
-                            current = parent[current]
-                        if any(cell in firey for cell in path):
-                            continue
-                        return path
-
-                    for dx, dy in self.directions:
-                        new_x, new_y = c_x + dx, c_y + dy
-                        new_pos = (new_x, new_y)
-
-                        if (0 <= new_x < self.D and 0 <= new_y < self.D 
-                            and self.ship[new_x][new_y] != 'X'
-                            and (new_pos not in cost or new_cost < cost[new_pos])
-                            and self.ship[new_x][new_y] not in firey):
-                            new_cost = cost[current] + 1
-
-                            cost[new_pos] = new_cost
-                            priority = new_cost + self.heuristic(button_x, button_y, new_x, new_y)
-                            heapq.heappush(queue, (priority, new_pos))
-                            parent[new_pos] = current
-
-                return None
-            
-            button_path = find_shortest_path(self.bot[0], self.bot[1], self.button[0], self.button[1], combination_of_avoided_cells)
-
-            if button_path:
-                    print("using combo path")
-                    self.ship[self.bot[0]][self.bot[1]] = 'O'
-                    self.bot = button_path[0]
-                    self.ship[self.bot[0]][self.bot[1]] = self.colored_block('c')
                 
-            else: 
-                button_path_fire_only = find_shortest_path(self.bot[0], self.bot[1], self.button[0], self.button[1], actual_fire)
-                print("no path with combination trying actual fire")
-                
-                if button_path_fire_only:
-                    print("Using actual fire path")
-                    self.ship[self.bot[0]][self.bot[1]] = 'O'
-                    self.bot = button_path_fire_only[0]
-                    self.ship[self.bot[0]][self.bot[1]] = self.colored_block('c')
-                else:
-                    print("No path to button")
-                    break  
-            if self.bot == self.button:
-                print("Bot won")
-                break
-            if self.bot in actual_fire:
-                print("you lost")
-                break
-        
-            fire_copy = fire_possibilities.copy()
-        
-            for fire_pos in fire_possibilities:
-                curr_x, curr_y = fire_pos
-                k = self.count_neighbors(curr_x, curr_y, self.colored_block('r'))
-                fire_spread_probability = 1 - (1 - q) ** k
+            if (path is not None and path not in fire and self.bot not in fire):
+                next_step = path.pop(0)
+                self.ship[self.bot[0]][self.bot[1]] = "O"
+                print(next_step)
+                self.bot = next_step
+                self.ship[self.bot[0]][self.bot[1]] = self.colored_block('c')
+            else:
+                print("you lost")   
+                return
+                            
+            fire_copy = fire_possibilties.copy()
+
+            for fire_poss in fire_possibilties:
+                curr_x, curr_y = fire_poss
+                k = self.count_neighbors(new_x, new_y, self.colored_block('r')) # number of fires
+                fire_spread_possibility = 1 - (1 - q) ** k
                 rand = random.random()
-
-                if fire_spread_probability > rand:
+                if fire_spread_possibility > rand:
                     self.ship[curr_x][curr_y] = self.colored_block('r')
-                    actual_fire.add((curr_x,curr_y))
+                    fire.append((curr_x,curr_y))
                     for x, y in self.directions:
                         new_x, new_y = x + curr_x, y + curr_y
                         if 0 <= new_x < self.D and 0 <= new_y < self.D and self.ship[new_x][new_y] in possible_places:
                             fire_copy.add((new_x, new_y))
                 else:
                     fire_copy.add(self.fire)
-
-            fire_possibilities = fire_copy.copy()
+            fire_possibilties = fire_copy.copy()
             print(self)
-            time.sleep(1)
-                     
-    def run_bot_4(self) -> None:
-        pass 
+            time.sleep(0.25)
+
+        if self.bot == self.button: 
+            print("you won")
+        else:
+            print("you lost")
+
+    def run_bot_2(self, q) -> None: # run with the type of bot you want
+        possible_places = [self.colored_block('c'), 'O']
+        fire_possibilties = set()
+        curr_x, curr_y = self.fire
+        fire = [self.fire]
         
+        # Initial fire probable locations (up to 4)
+        for x, y in self.directions:
+            new_x, new_y = x + curr_x, y + curr_y
+            if 0 <= new_x < self.D and 0 <= new_y < self.D and self.ship[new_x][new_y] == 'O':
+                fire_possibilties.add((new_x, new_y)) 
+
+        while self.bot != self.button:
+            
+            path = self.find_shortest_path(fire)
+            print(path)
+                
+            if (path is not None and path not in fire and self.bot not in fire):
+                next_step = path.pop(0)
+                self.ship[self.bot[0]][self.bot[1]] = "O"
+                print(next_step)
+                self.bot = next_step
+                self.ship[self.bot[0]][self.bot[1]] = self.colored_block('c')
+            else:
+                print("you lost")   
+                return
+                            
+            fire_copy = fire_possibilties.copy()
+
+            for fire_poss in fire_possibilties:
+                curr_x, curr_y = fire_poss
+                k = self.count_neighbors(new_x, new_y, self.colored_block('r')) # number of fires
+                fire_spread_possibility = 1 - (1 - q) ** k
+                rand = random.random()
+                if fire_spread_possibility > rand:
+                    self.ship[curr_x][curr_y] = self.colored_block('r')
+                    fire.append((curr_x,curr_y))
+                    for x, y in self.directions:
+                        new_x, new_y = x + curr_x, y + curr_y
+                        if 0 <= new_x < self.D and 0 <= new_y < self.D and self.ship[new_x][new_y] in possible_places:
+                            fire_copy.add((new_x, new_y))
+                else:
+                    fire_copy.add(self.fire)
+            fire_possibilties = fire_copy.copy()
+            print(self)
+            time.sleep(0.5)
+
+        if self.bot == self.button: 
+            print("you won")
+        else:
+            print("you lost")
+            
+    def run_bot_3(self, q) -> None: # run with the type of bot you want
+        possible_places = [self.colored_block('c'), 'O']
+        fire_possibilties = set()
+        curr_x, curr_y = self.fire
+        fire = [self.fire]
+        
+        # Initial fire probable locations (up to 4)
+        for x, y in self.directions:
+            new_x, new_y = x + curr_x, y + curr_y
+            if 0 <= new_x < self.D and 0 <= new_y < self.D and self.ship[new_x][new_y] == 'O':
+                fire_possibilties.add((new_x, new_y)) 
+
+        while self.bot != self.button:
+
+            path = self.find_shortest_path(fire_possibilties)
+                
+            if (path is not None and path not in fire and self.bot not in fire):
+                print("using possibilities path")
+                next_step = path.pop(0)
+                self.ship[self.bot[0]][self.bot[1]] = "O"
+                print(next_step)
+                self.bot = next_step
+                self.ship[self.bot[0]][self.bot[1]] = self.colored_block('c')
+            elif not path:
+                print("using actual fire path")
+                path = self.find_shortest_path(fire)
+                if (path is not None and path not in fire and self.bot not in fire):
+                    next_step = path.pop(0)
+                    self.ship[self.bot[0]][self.bot[1]] = "O"
+                    print(next_step)
+                    self.bot = next_step
+                    self.ship[self.bot[0]][self.bot[1]] = self.colored_block('c')
+                else:
+                    print("you lost")
+                    return
+            else:
+                print("you lost")
+                return
+
+            fire_copy = fire_possibilties.copy()
+
+            for fire_poss in fire_possibilties:
+                curr_x, curr_y = fire_poss
+                k = self.count_neighbors(new_x, new_y, self.colored_block('r')) # number of fires
+                fire_spread_possibility = 1 - (1 - q) ** k
+                rand = random.random()
+                if fire_spread_possibility > rand:
+                    self.ship[curr_x][curr_y] = self.colored_block('r')
+                    fire.append((curr_x,curr_y))
+                    for x, y in self.directions:
+                        new_x, new_y = x + curr_x, y + curr_y
+                        if 0 <= new_x < self.D and 0 <= new_y < self.D and self.ship[new_x][new_y] in possible_places:
+                            fire_copy.add((new_x, new_y))
+                else:
+                    fire_copy.add(self.fire)
+            fire_possibilties = fire_copy.copy()
+            print(self)
+            time.sleep(0.25)
+
+        if self.bot == self.button: 
+            print("you won")
+        else:
+            print("you lost")
+            
+    def run_bot_4(self) ->None:
+        pass
                
 if __name__ == "__main__":
-
     ship = Ship()
     ship.generate_ship()
     print(ship)
-    # ship.generate_init_ship()
-    ans = int(input("Which bot do you want to run?\n1.Bot 1\n2.Bot 2.\n3.Bot 3\n4.Bot 4\n"))
-    
-    
-    if ans == 1:
-        ship.run_bot_1()
-    elif ans == 2:
-        ship.run_bot_2()
-    elif ans == 3:
-        ship.run_bot_3()
-    elif ans == 4:
-        ship.run_bot_4()
-    
-            
 
+    ans = int(input("Which bot do you want to run?\n1.Bot 1\n2.Bot 2\n3.Bot 3\n4.Bot 4\nBot: "))
+    prob = float(input("What is the probablity:"))
+    
+    match ans:
+        case 1:
+            ship.run_bot_1(prob)
+        case 2:
+            ship.run_bot_2(prob)
+        case 3:
+            ship.run_bot_3(prob)
+        case 4:
+            ship.run_bot_4(prob)
